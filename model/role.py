@@ -4,7 +4,7 @@ from model import Base
 class Role(Base):
     __tablename__ = "role"
 
-    name = Column(String(50), unique=True)
+    name = Column("pk_role", String(50), unique=True)
     description = Column(Text(1000))
 
     def __init__(self, name:str, description:str):
