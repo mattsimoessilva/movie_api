@@ -3,14 +3,15 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 import os
 
-from model.base import Base
-from model.movie import Movie
-from model.company import Company
-from model.company_and_role import CompanyAndRole
-from model.movie_and_person import MovieAndPerson
-from model.person import Person
-from model.person_and_role import PersonAndRole
-from model.company_and_movie import CompanyAndMovie
+from models.base import Base
+from models.movie import Movie
+from models.company import Company
+from models.company_and_role import CompanyAndRole
+from models.movie_and_person import MovieAndPerson
+from models.person import Person
+from models.person_and_role import PersonAndRole
+from models.movie_and_company import MovieAndCompany
+from models.role import Role
 
 db_path = "database/"
 

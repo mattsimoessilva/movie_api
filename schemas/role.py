@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from model import Session, Role
+from models import Session, Role
 
 class RoleSchema(BaseModel):
     id: int

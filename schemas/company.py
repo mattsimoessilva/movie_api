@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from model import Session, Company, Role, CompanyAndRole, CompanyAndMovie, Movie
+from models import Session, Company, Role, CompanyAndRole, MovieAndCompany, Movie
 
 class CompanySchema(BaseModel):
     id: int
@@ -27,8 +27,8 @@ def company_presentation(company: Company) -> dict:
 
         movies = (
             session.query(Movie.title)
-            .join(CompanyAndMovie)
-            .filter(CompanyAndMovie.company_id == company.id)
+            .join(MovieAndCompany)
+            .filter(MovieAndCompany.company_id == company.id)
             .all()
         )
 

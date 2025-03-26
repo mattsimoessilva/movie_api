@@ -1,15 +1,23 @@
 from pydantic import BaseModel
 from typing import List
-from model import Session, MovieAndPerson, Role, Person, CompanyAndMovie, Company
-from model.movie import Movie
-from schemas import PersonSchema, CompanySchema
+from models import Session, MovieAndPerson, Role, Person, MovieAndCompany, Company
+from models.movie import Movie
+from schemas.person import PersonSchema
+from schemas.company import CompanySchema
 
 class MovieSchema(BaseModel):
     title: str
     poster_url: str
     running_time: int
-    budget: int
+    budget: float
     box_office: float
+    directors: List[PersonSchema]
+    screenwriters: List[PersonSchema]
+    producers: List[PersonSchema]
+    actors: List[PersonSchema]
+    production_companies: List[CompanySchema]
+    distribution_companies: List[CompanySchema]
+
 
 class MovieSearchSchema(BaseModel):
     title: str
@@ -23,7 +31,7 @@ class MovieViewSchema(BaseModel):
     title: str
     poster_url: str
     running_time: int
-    budget: int
+    budget: float
     box_office: float
     directors: List[PersonSchema]
     screenwriters: List[PersonSchema]
@@ -52,8 +60,8 @@ def movie_presentation(movie: Movie):
         def get_companies_by_role(role_name):
             return (
                 session.query(Company.name)
-                .join(CompanyAndMovie)
-                .filter(CompanyAndMovie.movie_id == movie.id)
+                .join(MovieAndCompany)
+                .filter(MovieAndCompany.movie_id == movie.id)
                 .filter(Role.name == role_name)
                 .all()
             )

@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from model import Session, Person, Role, PersonAndRole, Movie, MovieAndPerson
+from models import Session, Person, Role, PersonAndRole, Movie, MovieAndPerson
 
 class PersonSchema(BaseModel):
     id: int
