@@ -11,6 +11,11 @@ class PersonSchema(BaseModel):
 class PersonSearchSchema(BaseModel):
     id: int
 
+class PersonUpdateSchema(BaseModel):
+    id: int
+    name: str
+    picture_url: str
+
 class PersonDeletionSchema(BaseModel):
     message: str
     name: str

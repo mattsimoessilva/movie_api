@@ -114,7 +114,29 @@ def get_movie(query: MovieSearchSchema):
             return {"message": error_msg}, 404
         else:
             return movie_presentation(movie), 200
+        
+@app.put('/movie', tags=[movie_tag],
+         responses={"200": MovieUpdateSchema, "404": ErrorSchema})
+def update_movie(form: MovieUpdateSchema):
+    with Session() as session:
+        movie = session.query(Movie).filter(Movie.id == form.id).first()
 
+        movie.title = form.title
+        movie.poster_url = form.poster_url
+        movie.running_time = form.running_time
+        movie.budget = form.budget
+        movie.box_office = form.box_office
+
+        try:
+            session.commit()
+        
+        except Exception as e:
+            error_msg = "It wasn't possible to update the movie"
+
+            return {"message": error_msg}, 400
+
+        return movie_presentation(movie), 200
+    
 
 @app.delete('/movie', tags=[movie_tag],
             responses={"200": MovieDeletionSchema, "404": ErrorSchema})
@@ -185,6 +207,26 @@ def get_role(query: RoleSearchSchema):
         else:
             return role_presentation(role), 200
       
+
+@app.put('/role', tags=[role_tag],
+         responses={"200": RoleUpdateSchema, "404": ErrorSchema})
+def update_role(form: RoleUpdateSchema):
+    with Session() as session:
+        role = session.query(Role).filter(Role.id == form.id).first()
+
+        role.name = form.name
+        role.description = form.description
+
+        try:
+            session.commit()
+        
+        except Exception as e:
+            error_msg = "It wasn't possible to update the role"
+
+            return {"message": error_msg}, 400
+
+        return role_presentation(role), 200
+
         
 @app.delete('/role', tags=[role_tag],
             responses={"200": RoleDeletionSchema, "404": ErrorSchema})
@@ -276,6 +318,26 @@ def get_company(query: CompanySearchSchema):
             return company_presentation(company), 200
       
         
+@app.put('/company', tags=[company_tag],
+         responses={"200": CompanyUpdateSchema, "404": ErrorSchema})
+def update_company(form: CompanyUpdateSchema):
+    with Session() as session:
+        company = session.query(Company).filter(Company.id == form.id).first()
+
+        company.name = form.name
+        company.logo_url = form.logo_url
+
+        try:
+            session.commit()
+        
+        except Exception as e:
+            error_msg = "It wasn't possible to update the company"
+
+            return {"message": error_msg}, 400
+
+        return company_presentation(company), 200
+
+
 @app.delete('/company', tags=[company_tag],
             responses={"200": CompanyDeletionSchema, "404": ErrorSchema})
 def delete_company(query: CompanySearchSchema):
@@ -365,7 +427,27 @@ def get_person(query: PersonSearchSchema):
         else:
             return person_presentation(person), 200
       
+
+@app.put('/person', tags=[person_tag],
+         responses={"200": PersonUpdateSchema, "404": ErrorSchema})
+def update_person(form: PersonUpdateSchema):
+    with Session() as session:
+        person = session.query(Person).filter(Person.id == form.id).first()
+
+        person.name = form.name
+        person.picture_url = form.picture_url
+
+        try:
+            session.commit()
         
+        except Exception as e:
+            error_msg = "It wasn't possible to update the person"
+
+            return {"message": error_msg}, 400
+
+        return person_presentation(person), 200
+
+
 @app.delete('/person', tags=[person_tag],
             responses={"200": PersonDeletionSchema, "404": ErrorSchema})
 def delete_person(query: PersonSearchSchema):

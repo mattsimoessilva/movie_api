@@ -12,7 +12,7 @@ class Movie(Base):
     box_office = Column(Float)
 
     def __init__(self, title:str, poster_url:str,
-                 running_time:int,budget:int, box_office:float):
+                 running_time:int,budget:float, box_office:float):
         self.title = title
         self.poster_url = poster_url
         self.running_time = running_time

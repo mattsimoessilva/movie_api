@@ -18,6 +18,16 @@ class MovieSchema(BaseModel):
 class MovieSearchSchema(BaseModel):
     id: int
 
+class MovieUpdateSchema(BaseModel):
+    id: int
+    title: str
+    poster_url: str
+    running_time: int
+    budget: float
+    box_office: float
+    persons: List[int]
+    companies: List[int]
+
 class MovieDeletionSchema(BaseModel):
     message: str
     title: str

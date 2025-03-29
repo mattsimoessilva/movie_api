@@ -10,6 +10,11 @@ class CompanySchema(BaseModel):
 class CompanySearchSchema(BaseModel):
     id: int
 
+class CompanyUpdateSchema(BaseModel):
+    id: int
+    name: str
+    logo_url: str
+
 class CompanyDeletionSchema(BaseModel):
     message: str
     name: str

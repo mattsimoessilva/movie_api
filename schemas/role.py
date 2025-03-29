@@ -9,6 +9,11 @@ class RoleSchema(BaseModel):
 class RoleSearchSchema(BaseModel):
     id: int
 
+class RoleUpdateSchema(BaseModel):
+    id: int
+    name: str 
+    description: str
+
 class RoleDeletionSchema(BaseModel):
     message: str
     name: str
