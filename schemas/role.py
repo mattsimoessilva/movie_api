@@ -3,12 +3,11 @@ from typing import List
 from models import Session, Role
 
 class RoleSchema(BaseModel):
-    id: int
-    name: str
-    description: str
+    name: str = "A Role Name"
+    description: str = "A description of a role"
 
 class RoleSearchSchema(BaseModel):
-    name: str
+    id: int
 
 class RoleDeletionSchema(BaseModel):
     message: str

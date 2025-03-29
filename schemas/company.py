@@ -3,12 +3,12 @@ from typing import List
 from models import Session, Company, Role, CompanyAndRole, MovieAndCompany, Movie
 
 class CompanySchema(BaseModel):
-    id: int
-    name: str
-    logo_url: str
+    name: str = "A Company Name"
+    logo_url: str = "https://images.com/resources/logo.png"
+    roles: List[int] = [1]
 
 class CompanySearchSchema(BaseModel):
-    name: str
+    id: int
 
 class CompanyDeletionSchema(BaseModel):
     message: str

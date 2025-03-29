@@ -1,14 +1,15 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from models import Session, Person, Role, PersonAndRole, Movie, MovieAndPerson
+import datetime
 
 class PersonSchema(BaseModel):
-    id: int
-    name: str
-    birthday: str
+    name: str = "A Person Name"
+    picture_url: str = "https://images.com/resources/picture.png"
+    roles: List[int] = [1]
 
 class PersonSearchSchema(BaseModel):
-    name: str
+    id: int
 
 class PersonDeletionSchema(BaseModel):
     message: str
@@ -37,12 +38,12 @@ def person_presentation(person: Person) -> dict:
         return {
             "id": person.id,
             "name": person.name,
-            "birthday": person.birthday,
+            "picture_url": person.picture_url,
             "roles": role_list, 
             "movies": movie_list,
         }
     
-def persons_presentation(persons: List[Person]) -> dict:
+def people_presentation(persons: List[Person]) -> dict:
     return {
         "persons": [person_presentation(person) for person in persons]
     }
