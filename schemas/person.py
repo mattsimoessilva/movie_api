@@ -23,22 +23,22 @@ class PersonDeletionSchema(BaseModel):
 def person_presentation(person: Person) -> dict:
     with Session() as session:
         roles = (
-            session.query(Role.name)
+            session.query(Role)
             .join(PersonAndRole)
             .filter(PersonAndRole.person_id == person.id)
             .all()
         )
 
-        role_list = [role.name for role in roles]
+        role_list = [{"id": role.id, "name": role.name} for role in roles]
 
         movies = (
-            session.query(Movie.title)
+            session.query(Movie)
             .join(MovieAndPerson)
             .filter(MovieAndPerson.person_id == person.id)
             .all()
         )
 
-        movie_list = [movie.title for movie in movies]
+        movie_list = [{"id": movie.id, "title": movie.title, "poster_url": movie.poster_url} for movie in movies]
 
         return {
             "id": person.id,
