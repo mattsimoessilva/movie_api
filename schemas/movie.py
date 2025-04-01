@@ -10,6 +10,7 @@ class MovieSchema(BaseModel):
     running_time: int = 60
     budget: float = 1000000
     box_office: float = 2000000
+    release_year: int = 2000
     people: List[int] = [1]
 
 class MovieSearchSchema(BaseModel):
@@ -22,6 +23,7 @@ class MovieUpdateSchema(BaseModel):
     running_time: int
     budget: float
     box_office: float
+    release_year: int
     people: List[int]
 
 class MovieDeletionSchema(BaseModel):
@@ -59,6 +61,7 @@ def movie_presentation(movie: Movie):
             "running_time": movie.running_time,
             "budget": movie.budget,
             "box_office": movie.box_office,
+            "release_year": movie.release_year,
         }
 
         return {**movie, **list_for_each_role}

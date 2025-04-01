@@ -32,6 +32,7 @@ def add_movie(form: MovieSchema):
             running_time = form.running_time,
             budget = form.budget,
             box_office = form.box_office,
+            release_year = form.release_year,
         )
 
         try:
@@ -106,6 +107,7 @@ def update_movie(form: MovieUpdateSchema):
         movie.running_time = form.running_time
         movie.budget = form.budget
         movie.box_office = form.box_office
+        movie.release_year = form.release_year
 
         try:
             session.commit()
