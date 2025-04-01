@@ -48,7 +48,7 @@ def person_presentation(person: Person) -> dict:
             "movies": movie_list,
         }
     
-def people_presentation(persons: List[Person]) -> dict:
+def people_presentation(people: List[Person]) -> dict:
     return {
-        "persons": [person_presentation(person) for person in persons]
+        "people": [person_presentation(person) for person in people]
     }

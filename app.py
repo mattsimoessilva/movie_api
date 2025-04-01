@@ -14,7 +14,6 @@ CORS(app)
 home_tag = Tag(name="Documentation", description="Documentation selection: Swagger, Redoc or RapiDoc")
 movie_tag = Tag(name="Movie", description="Adding, viewing, updating, and removing movies")
 role_tag = Tag(name="Role", description="Adding, viewing, updating, and removing roles")
-company_tag = Tag(name="Company", description="Adding, viewing, updating, and removing companies")
 person_tag = Tag(name="Person", description="Adding, viewing, updating, and removing people")
 
 @app.get('/', tags=[home_tag])
@@ -51,7 +50,7 @@ def add_movie(form: MovieSchema):
         
         movie_and_person_list = []
 
-        for person_id in form.persons:
+        for person_id in form.people:
             movie_and_person = MovieAndPerson(
                 person_id = person_id,
                 movie_id = movie.id
@@ -66,25 +65,6 @@ def add_movie(form: MovieSchema):
             error_msg = "It wasn't possible to add people to the movie"
 
             return {"message": error_msg}, 400
-        
-        movie_and_company_list = []
-
-        for company_id in form.companies:
-            movie_and_company = MovieAndCompany(
-                company_id = company_id,
-                movie_id = movie.id
-            )
-            movie_and_company_list.append(movie_and_company)
-
-        try:
-            session.bulk_save_objects(movie_and_company_list)
-            session.commit()
-        
-        except Exception as e:
-            error_msg = "It wasn't possible to add companies to the movie"
-
-            return {"message": error_msg}, 400
-
         
         return movie_presentation(movie), 200
 
@@ -243,117 +223,6 @@ def delete_role(query: RoleSearchSchema):
             error_msg = "Role not found"
             return {"message": error_msg}, 404
 
-
-# COMPANY
-
-@app.post('/company', tags=[company_tag],
-          responses={"200": CompanySchema, "409": ErrorSchema, "400": ErrorSchema})
-def add_company(form: CompanySchema):
-    with Session() as session:
-        company = Company(
-            name = form.name,
-            logo_url = form.logo_url,
-        )
-
-        try:
-            session.add(company)
-            session.commit()
-        
-        except IntegrityError as e:
-            error_msg = "Company already registered in the database"
-
-            return {"message": error_msg}, 409
-        
-        except Exception as e:
-            error_msg = "It wasn't possible to register a new role"
-
-            return {"message": error_msg}, 400
-        
-        company_and_role_list = []
-
-        for role_id in form.roles:
-            company_and_role = CompanyAndRole(
-                company_id = company.id,
-                role_id = role_id
-            )
-            company_and_role_list.append(company_and_role)
-
-        try:
-            session.bulk_save_objects(company_and_role_list)
-            session.commit()
-        
-        except Exception as e:
-            error_msg = "It wasn't possible to add roles to the company"
-
-            return {"message": error_msg}, 400
-        
-
-        return company_presentation(company), 200
-
-
-@app.get('/companies', tags=[company_tag],
-         responses={"200": CompanySchema, "409": ErrorSchema, "400": ErrorSchema})
-def get_companies():
-    with Session() as session:
-       companies = session.query(Company).all()
-
-       if not companies:
-           return {"companies": []}, 200
-       else:
-           return companies_presentation(companies), 200
-
-
-@app.get('/company', tags=[company_tag],
-         responses={"200": CompanySchema, "404": ErrorSchema})
-def get_company(query: CompanySearchSchema):
-    with Session() as session:
-        company_id = query.id
-
-        company = session.query(Company).filter(Company.id == company_id).first()
-
-        if not company:
-            error_msg = "Company not found"
-            return {"message": error_msg}, 404
-        else:
-            return company_presentation(company), 200
-      
-        
-@app.put('/company', tags=[company_tag],
-         responses={"200": CompanyUpdateSchema, "404": ErrorSchema})
-def update_company(form: CompanyUpdateSchema):
-    with Session() as session:
-        company = session.query(Company).filter(Company.id == form.id).first()
-
-        company.name = form.name
-        company.logo_url = form.logo_url
-
-        try:
-            session.commit()
-        
-        except Exception as e:
-            error_msg = "It wasn't possible to update the company"
-
-            return {"message": error_msg}, 400
-
-        return company_presentation(company), 200
-
-
-@app.delete('/company', tags=[company_tag],
-            responses={"200": CompanyDeletionSchema, "404": ErrorSchema})
-def delete_company(query: CompanySearchSchema):
-    with Session() as session:
-        company_id = query.id
-
-        company = session.query(Company).filter(Company.id == company_id).delete()
-        session.commit()
-
-        if company:
-            return {"message": "Company deleted", "id": company_id}
-        else:
-            error_msg = "Company not found"
-            return {"message": error_msg}, 404
-
-
 # PERSON
             
 @app.post('/person', tags=[person_tag],
@@ -454,7 +323,7 @@ def delete_person(query: PersonSearchSchema):
     with Session() as session:
         person_id = query.id
 
-        person = session.query(Company).filter(Company.id == person_id).delete()
+        person = session.query(Person).filter(Person.id == person_id).delete()
         session.commit()
 
         if person:
