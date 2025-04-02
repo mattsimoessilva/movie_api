@@ -28,7 +28,7 @@ def add_movie(form: MovieSchema):
     with Session() as session:
         movie = Movie(
             title = form.title,
-            poster_url = form.poster_url,
+            image_url = form.image_url,
             running_time = form.running_time,
             budget = form.budget,
             box_office = form.box_office,
@@ -103,7 +103,7 @@ def update_movie(form: MovieUpdateSchema):
         movie = session.query(Movie).filter(Movie.id == form.id).first()
 
         movie.title = form.title
-        movie.poster_url = form.poster_url
+        movie.image_url = form.image_url
         movie.running_time = form.running_time
         movie.budget = form.budget
         movie.box_office = form.box_office
@@ -233,7 +233,7 @@ def add_person(form: PersonSchema):
     with Session() as session:
         person = Person(
             name = form.name,
-            picture_url = form.picture_url,
+            image_url = form.image_url,
         )
 
         try:
@@ -306,7 +306,7 @@ def update_person(form: PersonUpdateSchema):
         person = session.query(Person).filter(Person.id == form.id).first()
 
         person.name = form.name
-        person.picture_url = form.picture_url
+        person.image_url = form.image_url
 
         try:
             session.commit()

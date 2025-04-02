@@ -6,9 +6,9 @@ class Person(Base):
 
     id = Column("pk_person", Integer, primary_key=True)
     name = Column(String(100))
-    picture_url = Column(String(2100))
+    image_url = Column(String(2100))
 
-    def __init__(self, name:str, picture_url:str):
+    def __init__(self, name:str, image_url:str):
         self.name = name
-        self.picture_url = picture_url
+        self.image_url = image_url
         

@@ -5,7 +5,7 @@ import datetime
 
 class PersonSchema(BaseModel):
     name: str = "A Person Name"
-    picture_url: str = "https://images.com/resources/picture.png"
+    image_url: str = "https://images.com/resources/picture.png"
     roles: List[int] = [1]
 
 class PersonSearchSchema(BaseModel):
@@ -14,7 +14,7 @@ class PersonSearchSchema(BaseModel):
 class PersonUpdateSchema(BaseModel):
     id: int
     name: str
-    picture_url: str
+    image_url: str
 
 class PersonDeletionSchema(BaseModel):
     message: str
@@ -38,12 +38,12 @@ def person_presentation(person: Person) -> dict:
             .all()
         )
 
-        movie_list = [{"id": movie.id, "title": movie.title, "poster_url": movie.poster_url} for movie in movies]
+        movie_list = [{"id": movie.id, "title": movie.title, "image_url": movie.image_url} for movie in movies]
 
         return {
             "id": person.id,
             "name": person.name,
-            "picture_url": person.picture_url,
+            "image_url": person.image_url,
             "roles": role_list, 
             "movies": movie_list,
         }

@@ -6,7 +6,7 @@ from schemas.person import PersonSchema
 
 class MovieSchema(BaseModel):
     title: str = "A Movie Title"
-    poster_url: str = "https://images.com/resources/poster.png"
+    image_url: str = "https://images.com/resources/poster.png"
     running_time: int = 60
     budget: float = 1000000
     box_office: float = 2000000
@@ -19,7 +19,7 @@ class MovieSearchSchema(BaseModel):
 class MovieUpdateSchema(BaseModel):
     id: int
     title: str
-    poster_url: str
+    image_url: str
     running_time: int
     budget: float
     box_office: float
@@ -48,7 +48,7 @@ def movie_presentation(movie: Movie):
         for role in roles:
             people = get_people_by_role(role.id)
     
-            person_list = [{"id": person.id, "name": person.name, "picture_url": person.picture_url} for person in people]
+            person_list = [{"id": person.id, "name": person.name, "image_url": person.image_url} for person in people]
 
             role_name = role.name.replace(' ','_').lower()
 
@@ -57,7 +57,7 @@ def movie_presentation(movie: Movie):
         movie = {
             "id": movie.id,
             "title": movie.title,
-            "poster_url": movie.poster_url,
+            "image_url": movie.image_url,
             "running_time": movie.running_time,
             "budget": movie.budget,
             "box_office": movie.box_office,
