@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from models import Session, MovieAndPerson, Role, Person
+from models import Session, MovieAndPerson, Role, Person, PersonAndRole
 from models.movie import Movie
 from schemas.person import PersonSchema
 
@@ -35,9 +35,10 @@ def movie_presentation(movie: Movie):
         def get_people_by_role(role_id):
             return (
                 session.query(Person)
-                .join(MovieAndPerson)
+                .join(PersonAndRole, Person.id == PersonAndRole.person_id)
+                .join(MovieAndPerson, Person.id == MovieAndPerson.person_id)
+                .filter(PersonAndRole.role_id == role_id)
                 .filter(MovieAndPerson.movie_id == movie.id)
-                .filter(Role.id == role_id)
                 .all()
             )
         
