@@ -1,12 +1,11 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from models import Session, Person, Role, PersonAndRole, Movie, MovieAndPerson
+from models import Session, Person, Role, Movie, MoviePersonRole
 import datetime
 
 class PersonSchema(BaseModel):
     name: str = "A Person Name"
     image_url: str = "https://images.com/resources/picture.png"
-    roles: List[int] = [1]
 
 class PersonSearchSchema(BaseModel):
     id: int
@@ -24,8 +23,8 @@ def person_presentation(person: Person) -> dict:
     with Session() as session:
         roles = (
             session.query(Role)
-            .join(PersonAndRole)
-            .filter(PersonAndRole.person_id == person.id)
+            .join(MoviePersonRole, MoviePersonRole.role_id == Role.id)
+            .filter(MoviePersonRole.person_id == person.id)
             .all()
         )
 
@@ -33,8 +32,8 @@ def person_presentation(person: Person) -> dict:
 
         movies = (
             session.query(Movie)
-            .join(MovieAndPerson)
-            .filter(MovieAndPerson.person_id == person.id)
+            .join(MoviePersonRole)
+            .filter(MoviePersonRole.person_id == person.id)
             .all()
         )
 
@@ -44,8 +43,8 @@ def person_presentation(person: Person) -> dict:
             "id": person.id,
             "name": person.name,
             "image_url": person.image_url,
-            "roles": role_list, 
-            "movies": movie_list,
+            "role": role_list, 
+            "movie": movie_list,
         }
     
 def people_presentation(people: List[Person]) -> dict:

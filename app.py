@@ -1,6 +1,6 @@
 from flask_openapi3 import OpenAPI, Tag, Info
 import json
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify, redirect, request
 from flask_cors import CORS
 from schemas import *
 from models import *
@@ -24,21 +24,23 @@ def home():
 
 @app.post('/movie', tags=[movie_tag],
           responses={"200": MovieSchema, "409": ErrorSchema, "400": ErrorSchema})
-def add_movie(form: MovieSchema):
+def add_movie():
+    data = request.get_json()
+
     optional_fields = {"image_url"}
-    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+    missing_fields = [field for field in MovieSchema.__annotations__ if field not in optional_fields and not data.get(field)]
 
     if missing_fields:
-        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
-    
+            return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+        
     with Session() as session:
         movie = Movie(
-            title = form.title,
-            image_url = form.image_url,
-            running_time = form.running_time,
-            budget = form.budget,
-            box_office = form.box_office,
-            release_year = form.release_year,
+            title=data["title"],
+            image_url=data.get("image_url", ""),
+            running_time=data["running_time"],
+            budget=data["budget"],
+            box_office=data["box_office"],
+            release_year=data["release_year"]
         )
 
         try:
@@ -55,19 +57,26 @@ def add_movie(form: MovieSchema):
 
             return {"message": error_msg}, 400
         
-        movie_and_person_list = []
+        movie_person_role_list = []
 
-        for person_id in form.people:
-            movie_and_person = MovieAndPerson(
-                person_id = person_id,
-                movie_id = movie.id
-            )
-            movie_and_person_list.append(movie_and_person)
+        for role_name, person_list in data.items():  # Loop through JSON key-value pairs
+            if isinstance(person_list, list) and person_list:  # Ensure it's a list of person IDs
+                role = session.query(Role).filter(Role.name.ilike(role_name)).first()
+
+                if role:
+                    for person_id in person_list:
+                        movie_person_role = MoviePersonRole(
+                            movie_id=movie.id,  # Ensure `movie` is correctly defined elsewhere
+                            person_id=person_id,
+                            role_id=role.id
+                        )
+                        movie_person_role_list.append(movie_person_role)
+
 
         try:
-            session.bulk_save_objects(movie_and_person_list)
+            session.bulk_save_objects(movie_person_role_list)
             session.commit()
-        
+
         except Exception as e:
             error_msg = "It wasn't possible to add people to the movie"
 
@@ -104,22 +113,24 @@ def get_movie(query: MovieSearchSchema):
         
 @app.put('/movie', tags=[movie_tag],
          responses={"200": MovieUpdateSchema, "404": ErrorSchema})
-def update_movie(form: MovieUpdateSchema):
+def update_movie():
+    data = request.get_json()
+
     optional_fields = {"image_url"}
-    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+    missing_fields = [field for field in MovieSchema.__annotations__ if field not in optional_fields and not data.get(field)]
 
     if missing_fields:
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
     
     with Session() as session:
-        movie = session.query(Movie).filter(Movie.id == form.id).first()
+        movie = session.query(Movie).filter(Movie.id == data["id"]).first()
 
-        movie.title = form.title
-        movie.image_url = form.image_url
-        movie.running_time = form.running_time
-        movie.budget = form.budget
-        movie.box_office = form.box_office
-        movie.release_year = form.release_year
+        movie.title = data["title"]
+        movie.image_url = data["image_url"]
+        movie.running_time = data["running_time"]
+        movie.budget = data["budget"]
+        movie.box_office = data["box_office"]
+        movie.release_year = data["release_year"]
 
         try:
             session.commit()
@@ -129,31 +140,44 @@ def update_movie(form: MovieUpdateSchema):
 
             return {"message": error_msg}, 400
         
-        movie_with_people = movie_presentation(movie)
-        
-        existing_people = set()
+        existing_roles_on_movie = {
+            (mpr.movie_id, mpr.person_id, mpr.role_id)
+            for mpr in session.query(MoviePersonRole).filter(MoviePersonRole.movie_id == movie.id).all()
+        }
 
-        for field_name, values in movie_with_people.items():
-            if isinstance(values, list):  
-                existing_people.update(person["id"] for person in values if isinstance(person["id"], int))
+        new_roles_on_movie = set()
 
-        new_people = set(form.people)
+        movie_person_role_list = []
 
-        to_add = new_people - existing_people
-        to_remove = existing_people - new_people
+        for role_name, person_list in data.items():
+            if isinstance(person_list, list) and person_list:
+                role = session.query(Role).filter(Role.name.ilike(role_name)).first()
+
+                if role:
+                    for person_id in person_list:
+                        role_entry = (movie.id, person_id, role.id)
+                        new_roles_on_movie.add(role_entry)
+                        
+                        movie_person_role_list.append(MoviePersonRole(
+                            movie_id=movie.id, person_id=person_id, role_id=role.id
+                        ))
+
+        to_add = new_roles_on_movie - existing_roles_on_movie
+        to_remove = existing_roles_on_movie - new_roles_on_movie
 
         try:
             if to_remove:
-                session.query(MovieAndPerson).filter(
-                    MovieAndPerson.person_id.in_(to_remove),
-                    MovieAndPerson.movie_id == movie.id
+                session.query(MoviePersonRole).filter(
+                    MoviePersonRole.movie_id.in_([m_id for m_id, _, _ in to_remove]),
+                    MoviePersonRole.person_id.in_([p_id for _, p_id, _ in to_remove]),
+                    MoviePersonRole.role_id.in_([r_id for _, _, r_id in to_remove])
                 ).delete(synchronize_session=False)
 
-            movie_and_person_list = [MovieAndPerson(person_id=person_id, movie_id=movie.id) for person_id in to_add]
-            if movie_and_person_list:
-                session.bulk_save_objects(movie_and_person_list)
+            if to_add:
+                session.bulk_save_objects([MoviePersonRole(movie_id=m_id, person_id=p_id, role_id=r_id) for m_id, p_id, r_id in to_add])
 
             session.commit()
+
         
         except Exception as e:
             error_msg = "It wasn't possible to update the people who worked on the movie"
@@ -182,17 +206,19 @@ def delete_movie(query: MovieSearchSchema):
 
 @app.post('/role', tags=[role_tag],
           responses={"200": RoleSchema, "409": ErrorSchema, "400": ErrorSchema})
-def add_role(form: RoleSchema):
+def add_role():
+    data = request.get_json()
+
     optional_fields = {}
-    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+    missing_fields = [field for field in RoleSchema.__annotations__ if field not in optional_fields and not data.get(field)]
 
     if missing_fields:
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
     
     with Session() as session:
         role = Role(
-            name = form.name,
-            description = form.description,
+            name = data["name"],
+            description = data["description"],
         )
 
         try:
@@ -241,18 +267,20 @@ def get_role(query: RoleSearchSchema):
 
 @app.put('/role', tags=[role_tag],
          responses={"200": RoleUpdateSchema, "404": ErrorSchema})
-def update_role(form: RoleUpdateSchema):
+def update_role():
+    data = request.get_json()
+
     optional_fields = {}
-    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+    missing_fields = [field for field in RoleSchema.__annotations__ if field not in optional_fields and not data.get(field)]
 
     if missing_fields:
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
     
     with Session() as session:
-        role = session.query(Role).filter(Role.id == form.id).first()
+        role = session.query(Role).filter(Role.id == data["id"]).first()
 
-        role.name = form.name
-        role.description = form.description
+        role.name = data["name"]
+        role.description = data["description"]
 
         try:
             session.commit()
@@ -284,9 +312,11 @@ def delete_role(query: RoleSearchSchema):
             
 @app.post('/person', tags=[person_tag],
           responses={"200": PersonSchema, "409": ErrorSchema, "400": ErrorSchema})
-def add_person(form: PersonSchema):
+def add_person():
+    data = request.get_json()
+
     optional_fields = {"image_url"}
-    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+    missing_fields = [field for field in PersonSchema.__annotations__ if field not in optional_fields and not data.get(field)]
 
     if missing_fields:
         error_msg = f"Missing required fields [{', '.join(missing_fields)}]";
@@ -294,8 +324,8 @@ def add_person(form: PersonSchema):
     
     with Session() as session:
         person = Person(
-            name = form.name,
-            image_url = form.image_url,
+            name = data["name"],
+            image_url = data["image_url"],
         )
 
         try:
@@ -311,25 +341,6 @@ def add_person(form: PersonSchema):
             error_msg = "It wasn't possible to register a new person"
 
             return {"message": error_msg}, 400
-        
-        person_and_role_list = []
-
-        for role_id in form.roles:
-            person_and_role = PersonAndRole(
-                person_id = person.id,
-                role_id = role_id
-            )
-            person_and_role_list.append(person_and_role)
-
-        try:
-            session.bulk_save_objects(person_and_role_list)
-            session.commit()
-        
-        except Exception as e:
-            error_msg = "It wasn't possible to add roles to the person"
-
-            return {"message": error_msg}, 400
-        
 
         return person_presentation(person), 200
 
@@ -363,18 +374,20 @@ def get_person(query: PersonSearchSchema):
 
 @app.put('/person', tags=[person_tag],
          responses={"200": PersonUpdateSchema, "404": ErrorSchema})
-def update_person(form: PersonUpdateSchema):
+def update_person():
+    data = request.get_json()
+
     optional_fields = {"image_url"}
-    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+    missing_fields = [field for field in Person.__annotations__ if field not in optional_fields and not data.get(field)]
 
     if missing_fields:
         return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
     
     with Session() as session:
-        person = session.query(Person).filter(Person.id == form.id).first()
+        person = session.query(Person).filter(Person.id == data["id"]).first()
 
-        person.name = form.name
-        person.image_url = form.image_url
+        person.name = data["name"]
+        person.image_url = data["image_url"]
 
         try:
             session.commit()

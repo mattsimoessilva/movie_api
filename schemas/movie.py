@@ -1,8 +1,7 @@
 from pydantic import BaseModel
 from typing import List
-from models import Session, MovieAndPerson, Role, Person, PersonAndRole
+from models import Session, MoviePersonRole, Role, Person
 from models.movie import Movie
-from schemas.person import PersonSchema
 
 class MovieSchema(BaseModel):
     title: str = "A Movie Title"
@@ -11,7 +10,9 @@ class MovieSchema(BaseModel):
     budget: float = 1000000
     box_office: float = 2000000
     release_year: int = 2000
-    people: List[int] = [1]
+
+    class Config:
+        extra = "allow"
 
 class MovieSearchSchema(BaseModel):
     id: int
@@ -32,13 +33,11 @@ class MovieDeletionSchema(BaseModel):
 
 def movie_presentation(movie: Movie):
     with Session() as session:
-        def get_people_by_role(role_id):
+        def get_people_by_role(role_id, movie_id):
             return (
                 session.query(Person)
-                .join(PersonAndRole, Person.id == PersonAndRole.person_id)
-                .join(MovieAndPerson, Person.id == MovieAndPerson.person_id)
-                .filter(PersonAndRole.role_id == role_id)
-                .filter(MovieAndPerson.movie_id == movie.id)
+                .join(MoviePersonRole, (Person.id == MoviePersonRole.person_id) & (MoviePersonRole.movie_id == movie_id))
+                .filter(MoviePersonRole.role_id == role_id)
                 .all()
             )
         
@@ -47,7 +46,7 @@ def movie_presentation(movie: Movie):
         list_for_each_role = {}
 
         for role in roles:
-            people = get_people_by_role(role.id)
+            people = get_people_by_role(role.id, movie.id)
     
             person_list = [{"id": person.id, "name": person.name, "image_url": person.image_url} for person in people]
 

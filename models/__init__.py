@@ -5,9 +5,8 @@ import os
 
 from models.base import Base
 from models.movie import Movie
-from models.movie_and_person import MovieAndPerson
 from models.person import Person
-from models.person_and_role import PersonAndRole
+from models.movie_person_role import MoviePersonRole
 from models.role import Role
 
 db_path = "database/"
