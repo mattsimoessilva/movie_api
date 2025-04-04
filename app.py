@@ -25,6 +25,12 @@ def home():
 @app.post('/movie', tags=[movie_tag],
           responses={"200": MovieSchema, "409": ErrorSchema, "400": ErrorSchema})
 def add_movie(form: MovieSchema):
+    optional_fields = {"image_url"}
+    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+
+    if missing_fields:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+    
     with Session() as session:
         movie = Movie(
             title = form.title,
@@ -99,6 +105,12 @@ def get_movie(query: MovieSearchSchema):
 @app.put('/movie', tags=[movie_tag],
          responses={"200": MovieUpdateSchema, "404": ErrorSchema})
 def update_movie(form: MovieUpdateSchema):
+    optional_fields = {"image_url"}
+    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+
+    if missing_fields:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+    
     with Session() as session:
         movie = session.query(Movie).filter(Movie.id == form.id).first()
 
@@ -114,6 +126,37 @@ def update_movie(form: MovieUpdateSchema):
         
         except Exception as e:
             error_msg = "It wasn't possible to update the movie"
+
+            return {"message": error_msg}, 400
+        
+        movie_with_people = movie_presentation(movie)
+        
+        existing_people = set()
+
+        for field_name, values in movie_with_people.items():
+            if isinstance(values, list):  
+                existing_people.update(person["id"] for person in values if isinstance(person["id"], int))
+
+        new_people = set(form.people)
+
+        to_add = new_people - existing_people
+        to_remove = existing_people - new_people
+
+        try:
+            if to_remove:
+                session.query(MovieAndPerson).filter(
+                    MovieAndPerson.person_id.in_(to_remove),
+                    MovieAndPerson.movie_id == movie.id
+                ).delete(synchronize_session=False)
+
+            movie_and_person_list = [MovieAndPerson(person_id=person_id, movie_id=movie.id) for person_id in to_add]
+            if movie_and_person_list:
+                session.bulk_save_objects(movie_and_person_list)
+
+            session.commit()
+        
+        except Exception as e:
+            error_msg = "It wasn't possible to update the people who worked on the movie"
 
             return {"message": error_msg}, 400
 
@@ -140,6 +183,12 @@ def delete_movie(query: MovieSearchSchema):
 @app.post('/role', tags=[role_tag],
           responses={"200": RoleSchema, "409": ErrorSchema, "400": ErrorSchema})
 def add_role(form: RoleSchema):
+    optional_fields = {}
+    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+
+    if missing_fields:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+    
     with Session() as session:
         role = Role(
             name = form.name,
@@ -193,6 +242,12 @@ def get_role(query: RoleSearchSchema):
 @app.put('/role', tags=[role_tag],
          responses={"200": RoleUpdateSchema, "404": ErrorSchema})
 def update_role(form: RoleUpdateSchema):
+    optional_fields = {}
+    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+
+    if missing_fields:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+    
     with Session() as session:
         role = session.query(Role).filter(Role.id == form.id).first()
 
@@ -230,6 +285,13 @@ def delete_role(query: RoleSearchSchema):
 @app.post('/person', tags=[person_tag],
           responses={"200": PersonSchema, "409": ErrorSchema, "400": ErrorSchema})
 def add_person(form: PersonSchema):
+    optional_fields = {"image_url"}
+    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+
+    if missing_fields:
+        error_msg = f"Missing required fields [{', '.join(missing_fields)}]";
+        return jsonify({"message": error_msg}), 400
+    
     with Session() as session:
         person = Person(
             name = form.name,
@@ -302,6 +364,12 @@ def get_person(query: PersonSearchSchema):
 @app.put('/person', tags=[person_tag],
          responses={"200": PersonUpdateSchema, "404": ErrorSchema})
 def update_person(form: PersonUpdateSchema):
+    optional_fields = {"image_url"}
+    missing_fields = [field for field in vars(form) if field not in optional_fields and not getattr(form, field)]
+
+    if missing_fields:
+        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
+    
     with Session() as session:
         person = session.query(Person).filter(Person.id == form.id).first()
 
