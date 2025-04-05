@@ -193,7 +193,8 @@ def delete_movie(query: MovieSearchSchema):
     with Session() as session:
         movie_id = query.id
 
-        movie = session.query(Movie).filter(Movie.id == movie_id).delete()
+        movie = session.query(Movie).filter(Movie.id == movie_id).first()
+        session.delete(movie)
         session.commit()
 
         if movie:
@@ -299,7 +300,8 @@ def delete_role(query: RoleSearchSchema):
     with Session() as session:
         role_id = query.id
 
-        role = session.query(Role).filter(Role.id == role_id).delete()
+        role = session.query(Role).filter(Role.id == role_id).first()
+        session.delete(role)
         session.commit()
 
         if role:
@@ -406,7 +408,9 @@ def delete_person(query: PersonSearchSchema):
     with Session() as session:
         person_id = query.id
 
-        person = session.query(Person).filter(Person.id == person_id).delete()
+        person = session.query(Person).filter(Person.id == person_id).first()
+        
+        session.delete(person)
         session.commit()
 
         if person:

@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Float, Integer, String
 from models import Base
+from sqlalchemy.orm import relationship
 
 class Movie(Base):
     __tablename__ = 'movie'
@@ -11,6 +12,8 @@ class Movie(Base):
     budget = Column(Float, nullable=False)
     box_office = Column(Float)
     release_year = Column(Integer, nullable=True)
+
+    movie_person_roles = relationship("MoviePersonRole", back_populates="movie", cascade="all, delete")
 
     def __init__(self, title:str, image_url:str,
                  running_time:int,budget:float, box_office:float,
