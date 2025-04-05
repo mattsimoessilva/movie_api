@@ -84,7 +84,7 @@ target/
 .ipynb_checkpoints
 
 # VSCode
-.vscode
+/.vscode
 
 # IPython
 profile_default/
