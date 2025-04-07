@@ -119,7 +119,7 @@ Deletes a role (only if not currently in use by a movie).
 
 - **Person**
   - `name`: string
-  - `image_url: optional string
+  - `image_url` optional string
 
 - **Role**
   - `name`: string (e.g., “Director”, “Actor”)
