@@ -25,7 +25,6 @@ class MovieUpdateSchema(BaseModel):
     budget: float
     box_office: float
     release_year: int
-    people: List[int]
 
 class MovieDeletionSchema(BaseModel):
     message: str
