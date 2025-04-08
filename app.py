@@ -97,21 +97,6 @@ def get_movies():
            return {"movies": []}, 200
        else:
            return movies_presentation(movies), 200
-
-
-@app.get('/movie', tags=[movie_tag],
-         responses={"200": MovieSchema, "404": ErrorSchema})
-def get_movie(query: MovieSearchSchema):
-    with Session() as session:
-        movie_id = query.id
-
-        movie = session.query(Movie).filter(Movie.id == movie_id).first()
-
-        if not movie:
-            error_msg = "Movie not found"
-            return {"message": error_msg}, 404
-        else:
-            return movie_presentation(movie), 200
         
 @app.put('/movie', tags=[movie_tag],
          responses={"200": MovieUpdateSchema, "404": ErrorSchema})
@@ -252,22 +237,6 @@ def get_roles():
        else:
            return roles_presentation(roles), 200
 
-
-@app.get('/role', tags=[role_tag],
-         responses={"200": RoleSchema, "404": ErrorSchema})
-def get_role(query: RoleSearchSchema):
-    with Session() as session:
-        role_id = query.id
-
-        role = session.query(Role).filter(Role.id == role_id).first()
-
-        if not role:
-            error_msg = "Role not found"
-            return {"message": error_msg}, 404
-        else:
-            return role_presentation(role), 200
-      
-
 @app.put('/role', tags=[role_tag],
          responses={"200": RoleUpdateSchema, "404": ErrorSchema})
 def update_role(body: RoleUpdateSchema):
@@ -355,21 +324,6 @@ def get_people():
            return {"people": []}, 200
        else:
            return people_presentation(people), 200
-
-
-@app.get('/person', tags=[person_tag],
-         responses={"200": PersonSchema, "404": ErrorSchema})
-def get_person(query: PersonSearchSchema):
-    with Session() as session:
-        person_id = query.id
-
-        person = session.query(Person).filter(Person.id == person_id).first()
-
-        if not person:
-            error_msg = "Person not found"
-            return {"message": error_msg}, 404
-        else:
-            return person_presentation(person), 200
       
 
 @app.put('/person', tags=[person_tag],

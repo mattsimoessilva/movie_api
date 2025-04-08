@@ -54,10 +54,6 @@ Example request body:
 
 Retrieves a list of all registered movies.
 
-#### GET `/movie?id={id}`
-
-Retrieves details of a specific movie by its ID.
-
 #### PUT `/movie`
 
 Updates a movie’s information and its list of people associated through roles. Requires all movie fields, plus any roles with person IDs (as lists) to be updated.
@@ -78,10 +74,6 @@ Registers a new person.
 
 Lists all registered people.
 
-#### GET `/person?id={id}`
-
-Fetches details about a specific person.
-
 #### PUT `/person`
 
 Updates the data of a person.
@@ -93,10 +85,6 @@ Removes a person and any associated movie roles.
 ### 🎭 Role
 
 Roles define the type of contribution a person makes in a movie (such as *Actor*, *Director*, *Writer*).
-
-#### POST `/role`
-
-Registers a new role in the database. **Roles must be registered before associating people with movies.**
 
 #### GET `/roles`
 
